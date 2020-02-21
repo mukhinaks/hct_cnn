@@ -33,3 +33,25 @@ def load_checkpoint(model, optimizer, filename='checkpoint-gpu.pth.tar'):
         print("no checkpoint found at '{}'".format(filename))
 
     return model, optimizer, start_epoch, losses, error_fields_list
+
+#Weighted average of 2-dimensional tensors
+def create_weighted_average_field(fields_list):
+    tmp = []
+    n = len(fields_list) 
+    for i in range(n):
+        t = torch.div(fields_list[i] * (i + 1), n * (n+1) / 2 )
+        tmp.append(t)
+        
+    error_field = torch.stack(tmp)
+    return error_field.sum(0)
+
+#Initilize model weights and biases
+def init_normal(m, ksi = True, alex = True):
+    if ksi:
+        m.ksi_fc2.bias.data.fill_(0.5)
+        
+    if alex:
+        m.alex_fc.bias.data.fill_(0.5)
+    
+    if type(m) == torch.nn.Conv3d:
+        torch.nn.init.dirac_(m.weight)
