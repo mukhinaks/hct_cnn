@@ -4,15 +4,8 @@ Created on Thu Feb 20 11:05:07 2020
 
 @author: Ksenia Mukhina
 """
-import datetime
 import os
 import torch
-
-#Sort file names according to dates in titles
-def natural_keys(text):
-    date = [int(x) for x in text.split('.')[0].split('-')[1:]]
-    value = int(datetime.datetime(*date).timestamp())
-    return value
 
 #Loads state dictionary for model and optimizer, loss' history, and current epoch
 def load_checkpoint(model, optimizer, filename='checkpoint-gpu.pth.tar'):
@@ -46,12 +39,12 @@ def create_weighted_average_field(fields_list):
     return error_field.sum(0)
 
 #Initilize model weights and biases
-def init_normal(m, ksi = True, alex = True):
-    if ksi:
-        m.ksi_fc2.bias.data.fill_(0.5)
-        
-    if alex:
-        m.alex_fc.bias.data.fill_(0.5)
-    
+def init_weights(m):    
     if type(m) == torch.nn.Conv3d:
         torch.nn.init.dirac_(m.weight)
+
+def init_bias(net):
+    net.ksi_fc2.bias.data.fill_(0.5)        
+    net.alex_fc.bias.data.fill_(0.5)
+    
+    

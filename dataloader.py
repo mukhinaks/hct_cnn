@@ -9,13 +9,19 @@ import torch
 from torch.utils import data
 import os
 import pickle
-import misc.helper
+import datetime
+
+#Sort file names according to dates in titles
+def natural_keys(text):
+    date = [int(x) for x in text.split('.')[0].split('-')[1:]]
+    value = int(datetime.datetime(*date).timestamp())
+    return value
 
 class Dataset(data.Dataset):
     def __init__(self, source_path, windows, level):
         #Loads all paths
         for root, dirs, files in os.walk(source_path):
-            files.sort(key=misc.helper.natural_keys)
+            files.sort(key=natural_keys)
             all_files = [ os.path.join(root, file) for file in files] 
         
         self.grids = []
