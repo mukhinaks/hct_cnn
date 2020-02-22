@@ -46,5 +46,15 @@ def init_weights(m):
 def init_bias(net):
     net.ksi_fc2.bias.data.fill_(0.5)        
     net.alex_fc.bias.data.fill_(0.5)
-    
-    
+
+#Create sparse tensor from dict    
+def create_transfer(data):            
+        i = torch.LongTensor(list(data.keys()))
+        v = torch.FloatTensor(list(data.values()))
+            
+        try:
+                tmp = torch.sparse.FloatTensor(i.t(), v, torch.Size([10,10])).to_dense() 
+        except:
+                tmp = torch.zeros([10, 10])
+                
+        return tmp    

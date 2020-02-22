@@ -65,7 +65,7 @@ class Dataset(data.Dataset):
                 for i in range(self.split):
                     for j in range(self.split):
                         if (i,j) in tmp_hour:
-                            if tmp_hour[(i,j)]['sum'] > 10:
+                            if tmp_hour[(i,j)]['sum'] > 30:
                                 tmp_data = []
                                 for tmp in tmps:                                                    
                                     if (i,j) in tmp:
@@ -91,12 +91,12 @@ class Dataset(data.Dataset):
                 for i in range(self.split):
                     for j in range(self.split):
                         if (i,j) in tmp_hour:
-                            if tmp_hour[(i,j)]['sum'] > 10:
+                            if tmp_hour[(i,j)]['sum'] > 30:
                                 
                                 for i_1 in range(self.split):
                                     for j_1 in range(self.split):
                                         if (i_1,j_1) in tmp_hour[(i,j)]['data']:
-                                            if tmp_hour[(i,j)]['data'][(i_1,j_1)]['sum'] > 10:
+                                            if tmp_hour[(i,j)]['data'][(i_1,j_1)]['sum'] > 30:
                                                 
                                                 tmp_data = []
                                                 for tmp in tmps:                                                                    
