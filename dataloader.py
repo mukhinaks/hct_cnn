@@ -18,11 +18,13 @@ def natural_keys(text):
     return value
 
 class Dataset(data.Dataset):
-    def __init__(self, source_path, windows, level):
+    def __init__(self, source_paths, windows, level):
         #Loads all paths
-        for root, dirs, files in os.walk(source_path):
-            files.sort(key=natural_keys)
-            all_files = [ os.path.join(root, file) for file in files] 
+        all_files = []
+        for source_path in source_paths:
+            for root, dirs, files in os.walk(source_path):
+                files.sort(key=natural_keys)
+                all_files.extend( os.path.join(root, file) for file in files )
         
         self.grids = []
         self.window = windows
@@ -65,7 +67,7 @@ class Dataset(data.Dataset):
                 for i in range(self.split):
                     for j in range(self.split):
                         if (i,j) in tmp_hour:
-                            if tmp_hour[(i,j)]['sum'] > 30:
+                            if tmp_hour[(i,j)]['sum'] > 0:
                                 tmp_data = []
                                 for tmp in tmps:                                                    
                                     if (i,j) in tmp:
@@ -91,12 +93,12 @@ class Dataset(data.Dataset):
                 for i in range(self.split):
                     for j in range(self.split):
                         if (i,j) in tmp_hour:
-                            if tmp_hour[(i,j)]['sum'] > 30:
+                            if tmp_hour[(i,j)]['sum'] > 0:
                                 
                                 for i_1 in range(self.split):
                                     for j_1 in range(self.split):
                                         if (i_1,j_1) in tmp_hour[(i,j)]['data']:
-                                            if tmp_hour[(i,j)]['data'][(i_1,j_1)]['sum'] > 30:
+                                            if tmp_hour[(i,j)]['data'][(i_1,j_1)]['sum'] > 0:
                                                 
                                                 tmp_data = []
                                                 for tmp in tmps:                                                                    
@@ -140,15 +142,12 @@ class Dataset(data.Dataset):
         #Creates sample
         hour_data, week_data, label, cell_address = self.grids[index]
       
-        input_tensors = []
-
-        for x in hour_data:
-            input_tensors.append(self.get_data(x) )
+        input_tensors = [self.get_data(x) for x in hour_data]
           
         #Forms data and its label
         X = torch.stack(input_tensors)
         X_24 = self.get_data(week_data).unsqueeze(0) 
         
-        y = self.get_data(label) 
+        y = self.get_data(label).unsqueeze(0)  
 
         return (X, X_24), y, cell_address
