@@ -18,7 +18,7 @@ def natural_keys(text):
     return value
 
 class Dataset(data.Dataset):
-    def __init__(self, source_paths, windows, level):
+    def __init__(self, source_paths, windows, level, threshold = 30):
         #Loads all paths
         all_files = []
         for source_path in source_paths:
@@ -32,6 +32,7 @@ class Dataset(data.Dataset):
         self.split = 10
         self.prediction_hour = 1
         self.shift = 24 * 7
+        self.threshold = threshold
         
         for f in range( self.shift, len(all_files)):
             
@@ -67,7 +68,7 @@ class Dataset(data.Dataset):
                 for i in range(self.split):
                     for j in range(self.split):
                         if (i,j) in tmp_hour:
-                            if tmp_hour[(i,j)]['sum'] > 0:
+                            if tmp_hour[(i,j)]['sum'] > threshold:
                                 tmp_data = []
                                 for tmp in tmps:                                                    
                                     if (i,j) in tmp:
@@ -93,12 +94,12 @@ class Dataset(data.Dataset):
                 for i in range(self.split):
                     for j in range(self.split):
                         if (i,j) in tmp_hour:
-                            if tmp_hour[(i,j)]['sum'] > 0:
+                            if tmp_hour[(i,j)]['sum'] > threshold:
                                 
                                 for i_1 in range(self.split):
                                     for j_1 in range(self.split):
                                         if (i_1,j_1) in tmp_hour[(i,j)]['data']:
-                                            if tmp_hour[(i,j)]['data'][(i_1,j_1)]['sum'] > 0:
+                                            if tmp_hour[(i,j)]['data'][(i_1,j_1)]['sum'] > threshold:
                                                 
                                                 tmp_data = []
                                                 for tmp in tmps:                                                                    
@@ -125,7 +126,43 @@ class Dataset(data.Dataset):
        
 
     def __len__(self):
-        return len(self.grids) 
+        return len(self.grids)
+    
+#    def get_level_data(self, index):
+#        dicts = self.grids[index]
+#        
+#        if self.level == 1:
+#                tmp_data = []
+#                for tmp in dicts:                
+#                    data = {k: v['sum'] for k, v in tmp.items()}
+#                    tmp_data.append( data)
+#
+#                hour_data = tmp_data[:self.window]
+#                week_data = tmp_data[-1]
+#                label = tmp_data[-2]
+#
+#                return hour_data, week_data, label, {1: all_files[f]}  
+#        
+#        elif self.level == 2:                
+#                for i in range(self.split):
+#                    for j in range(self.split):
+#                        if (i,j) in tmp_hour:
+#                            if tmp_hour[(i,j)]['sum'] > 10:
+#                                tmp_data = []
+#                                for tmp in dicts:                                                    
+#                                    if (i,j) in tmp:
+#                                        data = {k_1: v_1['sum'] for k_1, v_1 in tmp[(i,j)]['data'].items()}
+#                                    else:
+#                                        data = {}
+#                                    tmp_data.append( data)
+#                                    
+#                                hour_data = tmp_data[:self.window]
+#                                week_data = tmp_data[-1]
+#                                label = tmp_data[-2]
+#
+#                                return hour_data, week_data, label, {1: all_files[f], 2: (i,j)}
+#                                
+#        return hour_data, week_data, label, cell_address
 
     def get_data(self, data):            
         i = torch.LongTensor(list(data.keys()))
@@ -140,7 +177,7 @@ class Dataset(data.Dataset):
                 
     def __getitem__(self, index):   
         #Creates sample
-        hour_data, week_data, label, cell_address = self.grids[index]
+        hour_data, week_data, label, cell_address = self.grids[index] #self.get_level_data(index)
       
         input_tensors = [self.get_data(x) for x in hour_data]
           
